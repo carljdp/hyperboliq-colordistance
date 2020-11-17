@@ -1,0 +1,25 @@
+{
+  "name": "hyperboliq-mosaic",
+  "version": "1.0.0",
+  "description": "Use tile image to re-generate the original input image",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "dev": "node --inspect main.js",
+    "test": "./node_modules/mocha/bin/mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/carljdp/hyperboliq-mosaic.git"
+  },
+  "author": "Carl J du Preez (carljdp)",
+  "license": "MIT",
+  "homepage": "https://github.com/carljdp/hyperboliq-mosaic#readme",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^8.2.1"
+  },
+  "dependencies": {
+    "jimp": "^0.16.1"
+  }
+}
