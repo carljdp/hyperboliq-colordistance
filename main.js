@@ -58,6 +58,145 @@ async function getListOfFileNamesInDir(dir) {
   }
 }
 
+function convertRgbToXyz(rgb) {
+  // Pseudo code from: http://www.easyrgb.com/en/math.php
+
+  let R = rgb.r / 255
+  let G = rgb.g / 255
+  let B = rgb.b / 255
+
+  if ( R > 0.04045 ) 
+    R = Math.pow( ((R + 0.055) / 1.055), 2.4 )
+  else 
+    R = R / 12.92
+  if ( G > 0.04045 ) 
+    G = Math.pow( ((G + 0.055) / 1.055), 2.4 )
+  else 
+    G = G / 12.92
+  if ( B > 0.04045 ) 
+    B = Math.pow( ((B + 0.055) / 1.055), 2.4 )
+  else 
+    B = B / 12.92
+
+  R = R * 100
+  G = R * 100
+  B = R * 100
+
+  let X = R * 0.4124 + G * 0.3576 + B * 0.1805
+  let Y = R * 0.2126 + G * 0.7152 + B * 0.0722
+  let Z = R * 0.0193 + G * 0.1192 + B * 0.9505
+
+  return {x:X, y:Y, z:Z}
+}
+
+function convertXyzToRgb(xyz) {
+  // Pseudo code from: http://www.easyrgb.com/en/math.php
+
+  let X = xyz.x / 100
+  let Y = xyz.y / 100
+  let Z = xyz.z / 100
+
+  let R = X *  3.2406 + Y * -1.5372 + Z * -0.4986
+  let G = X * -0.9689 + Y *  1.8758 + Z *  0.0415
+  let B = X *  0.0557 + Y * -0.2040 + Z *  1.0570
+
+  if (R > 0.0031308) 
+    R = 1.055 * (Math.pow(R, 1/2.4)) - 0.055
+  else
+    R = 12.92 * R
+
+  if (G > 0.0031308) 
+    G = 1.055 * (Math.pow(G, 1/2.4)) - 0.055
+  else
+    G = 12.92 * G
+
+  if (B > 0.0031308) 
+    B = 1.055 * (Math.pow(B, 1/2.4)) - 0.055
+  else
+    B = 12.92 * B
+
+  R = R * 255
+  G = G * 255
+  B = B * 255
+
+  return {r:R, g:G, b:B}
+}
+
+function convertXyzToCieLab(xyz) {
+  // Pseudo code from: http://www.easyrgb.com/en/math.php
+
+  let referenceX = 1
+  let referenceY = 1
+  let referenceZ = 1
+
+  let X = X / referenceX
+  let Y = Y / referenceY
+  let Z = Z / referenceZ
+
+  if ( X > 0.008856 ) X = Math.pow(X, (1/3))
+  else
+    X = ( 7.787 * X ) + ( 16 / 116 )
+
+  if ( Y > 0.008856 ) Y = Math.pow(Y, (1/3))
+  else
+    Y = ( 7.787 * Y ) + ( 16 / 116 )
+
+  if ( Z > 0.008856 ) Z = Math.pow(Z, (1/3))
+  else
+    Z = ( 7.787 * Z ) + ( 16 / 116 )
+
+  let CieL = (116 * Y) - 16
+  let CieA = 500 * (X - Y)
+  let CieB = 200 * (Y - Z)
+
+  const CieLab = {
+    l: CieL,
+    a: CieA,
+    b: CieB
+  }
+  return CieLab
+}
+
+function convertCieLabToXyz(CieLab) {
+  // Pseudo code from: http://www.easyrgb.com/en/math.php
+
+  let referenceX = 1
+  let referenceY = 1
+  let referenceZ = 1
+
+  let Y = ( CieLab.l + 16 ) / 116
+  let X = CieLab.a / 500 + Y
+  let Z = Y - CieLab.b / 200
+
+  if (Math.pow(Y, 3)  > 0.008856 ) 
+    Y = Math.pow(Y, 3)
+  else
+    Y = ( Y - 16 / 116 ) / 7.787
+
+  if (Math.pow(X, 3)  > 0.008856 ) 
+    X = Math.pow(X, 3)
+  else
+    X = ( X - 16 / 116 ) / 7.787
+
+  if (Math.pow(Z, 3)  > 0.008856 ) 
+    Z = Math.pow(Z, 3)
+  else
+    Z = ( Z - 16 / 116 ) / 7.787
+
+  X = X * referenceX
+  Y = Y * referenceY
+  Z = Z * referenceZ
+
+  const Xyz = {
+    x: X,
+    y: Y,
+    z: Z
+  }
+
+  return Xyz
+}
+
+
 // MAIN
 async function main() {
   console.log('\n[MOSAIC] Strating ..')
