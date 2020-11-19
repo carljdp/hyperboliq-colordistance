@@ -213,7 +213,7 @@ function deltaE(cie1, cie2) {
 
 // MAIN
 async function main() {
-  console.log('\n[MOSAIC] Strating ..')
+  console.log('\n[MOSAIC] Starting ..')
 
   // get image & dimensions
   let inputImageOriginal = (await getImageFromDisk(inputImageUri)).scale(upScaleInput)
@@ -226,6 +226,7 @@ async function main() {
   const normalizedInputImageHeight = (Math.ceil(inputImageOriginal.bitmap.height / desiredPartsInHeight) * desiredPartsInHeight)
   const inputImageNormalized = inputImageOriginal.cover(normalizedInputImageWidth, normalizedInputImageHeight)
   console.log(`[MOSAIC] Input image rezised dimensions (to fit tiles): ${inputImageNormalized.bitmap.width}w x ${inputImageNormalized.bitmap.height}h`)
+
 
   // divide `input.jpg` into a 20x20 grid of parts
   const partWidth = inputImageNormalized.bitmap.width / desiredPartsInWidth
@@ -255,9 +256,9 @@ async function main() {
     process.stdout.write('.')
   }
   process.stdout.write('\n')
-
   //console.log(`[MOSAIC] Part [0][0] average RGB: ${JSON.stringify(gridPart[0][0].averageRgb)}; width: ${gridPart[0][0].jimp.bitmap.width}, height: ${gridPart[0][0].jimp.bitmap.height}`)
   //console.log(`[MOSAIC] Part [0][1] average RGB: ${JSON.stringify(gridPart[0][1].averageRgb)}; width: ${gridPart[0][1].jimp.bitmap.width}, height: ${gridPart[0][1].jimp.bitmap.height}`)
+
 
   // get average RGB for each tile image
   console.log(`[MOSAIC] Analyzing tile images..`)
@@ -296,10 +297,10 @@ async function main() {
   //console.log(`[MOSAIC] Tile [0] average RGB: ${JSON.stringify(poolOfTiles[0].averageRgb)}; width: ${poolOfTiles[0].jimp.bitmap.width}, height: ${poolOfTiles[0].jimp.bitmap.height}`)
   //console.log(`[MOSAIC] Tile [1] average RGB: ${JSON.stringify(poolOfTiles[1].averageRgb)}; width: ${poolOfTiles[1].jimp.bitmap.width}, height: ${poolOfTiles[1].jimp.bitmap.height}`)
 
-  console.log(`[MOSAIC] Composing new output image..`)
-  // substitute each part of `input.jpg` with the closest matching tile (from tiles folder)
-  let canvas = new Jimp(inputImageNormalized.bitmap.width, inputImageNormalized.bitmap.height)
 
+  // substitute each part of `input.jpg` with the closest matching tile (from tiles folder)
+  console.log(`[MOSAIC] Composing new output image..`)
+  let canvas = new Jimp(inputImageNormalized.bitmap.width, inputImageNormalized.bitmap.height)
   process.stdout.write('[MOSAIC]  ')
   for (let row = 0; row < desiredPartsInHeight; row++) {
     for (let column = 0; column < desiredPartsInWidth; column++) {
@@ -326,8 +327,6 @@ async function main() {
 
   // save as new  `output.jpg`
   canvas.write(path.join(__dirname, 'output.jpg'))
-
-
   console.log('[MOSAIC] Done.\n')
 }
 
