@@ -78,8 +78,6 @@ async function main() {
   console.log(`[MOSAIC] Tile [0][0] average RGB: ${JSON.stringify(gridPart[0][0].averageRgb)}`)
   console.log(`[MOSAIC] Tile [0][1] average RGB: ${JSON.stringify(gridPart[0][1].averageRgb)}`)
 
-  // get average RGB for each input image part
-
 
   // get average RGB for each tile image
 
