@@ -2,6 +2,7 @@
 
 Stich tile images together to form a target image. (output on left)
 ![example output](https://github.com/carljdp/hyperboliq-mosaic/blob/main/exampleOutput.png)
+*Images from Caltec-101/Faces dataset*
 
 ---  
 
