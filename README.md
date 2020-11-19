@@ -1,5 +1,8 @@
 # hyperboliq-mosaic
 
+Stich tile images together to form a target image. (output on left)
+![example output](https://github.com/carljdp/hyperboliq-mosaic/blob/main/exampleOutput.png)
+
 ---  
 
 ## Kata | Challenge  
