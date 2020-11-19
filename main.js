@@ -1,17 +1,48 @@
+const path = require('path')
 const Jimp = require('jimp')
 
-const RELATIVE__INPUT_IMAGE = './testData/input.jpg'
-const RELATIVE__TILES_DIR = './testData/nautilus'
+const inputImageRelativePath = path.join('testData')
+const inputImageFilename = path.join('input.jpg')
+const inputImageUri = path.join(__dirname, inputImageRelativePath, inputImageFilename) 
 
-console.log('[MOSAIC] Strating ..\n')
+async function getImageFromDisk(fileName) {
+  try {
+    const readResult = await Jimp.read(fileName)
+    return readResult
+  } catch (error) {
+    console.error(error)
+    process.exit()
+  }
+}
 
-// See if we can read images & print the dimensions
-const readImageDone = Jimp.read(RELATIVE__INPUT_IMAGE)
-  .then(image => {
-    console.log(`Dimensions: ${image.bitmap.width}w x ${image.bitmap.height}h`)
-  })
-  .catch(err => {
-    console.error(err);
-  });
+// MAIN
+async function main() {
+  console.log('\n[MOSAIC] Strating ..')
 
-Promise.all([readImageDone]).then( () => {console.log('\n[MOSAIC] End.')})
+  // get image & dimensions
+  let inputImage = await getImageFromDisk(inputImageUri)
+  console.log(`[MOSAIC] Input Image Dimensions: ${inputImage.bitmap.width}w x ${inputImage.bitmap.height}h`)
+
+  // resize or crop to an easy to use size
+
+
+  // divide `input.jpg` into a 20x20 grid of _parts_
+
+
+  // get average RGB for each input image part
+
+
+  // get average RGB for each tile image
+
+
+  // substitute each part of `input.jpg` with the closest matching tile (from tiles folder)
+
+
+  // save as new  `output.jpg`
+
+
+  console.log('[MOSAIC] End.\n')
+}
+
+// RUN
+main()
