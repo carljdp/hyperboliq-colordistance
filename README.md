@@ -24,8 +24,8 @@
 - [x] read `input.jpg`, & get its dimensions
 - [x] resize/crop `input.jpg` to be an easy to use size
 - [x] divide `input.jpg` into a 20x20 grid of _parts_
-- [x] get average RGB for each input image part
-- [x] get average RGB for each tile image
+- [x] get average RGB for each input image _part_
+- [x] Find tile images in dir & get average RGB for each _tile_
 - [x] substitute each part of `input.jpg` with the closest matching tile (from tiles folder)
 - [x] save as new  `output.jpg`
 
@@ -48,7 +48,3 @@ From your home or Projects directory:
 Sample images taken from caltec-101 dataset (101_ObjectCategories/nautilus)
 - `./testData/input.jpg` - the target-image to be generated
 - `./testData/tiles/*.jpg` - images to use as tiles for generating the target-image
-
-
-philip wolmerans, tzaneen, cape town, via flippe
-farm steer app
