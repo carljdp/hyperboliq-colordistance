@@ -32,7 +32,27 @@ async function main() {
   const inputImageNormalized = inputImageOriginal.cover(normalizedInputImageWidth, normalizedInputImageHeight)
   console.log(`[MOSAIC] Input Image Dimensions (normalized): ${inputImageNormalized.bitmap.width}w x ${inputImageNormalized.bitmap.height}h`)
 
-  // divide `input.jpg` into a 20x20 grid of _parts_
+  // divide `input.jpg` into a 20x20 grid of parts
+  const partWidth = inputImageNormalized.bitmap.width / desiredPartsInWidth
+  const partHeight = inputImageNormalized.bitmap.height / desiredPartsInHeight
+  console.log(`[MOSAIC] Tile Image Dimensions (normalized):   ${partWidth}w x  ${partHeight}h`)
+  let gridPart = []
+  for (let row = 0; row < desiredPartsInHeight; row++) {
+    if (!gridPart[row]) gridPart[row] = []
+    for (let column = 0; column < desiredPartsInWidth; column++) {
+
+      part = inputImageNormalized.clone().crop( 
+        column * partWidth, 
+        row * partHeight, 
+        partWidth,
+        partHeight
+      )
+      gridPart[row][column] = {
+        jimp: part,
+        averageRgb: null // TODO - calculate it
+      }
+    }
+  }
 
 
   // get average RGB for each input image part
