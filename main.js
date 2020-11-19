@@ -218,14 +218,14 @@ async function main() {
   // get image & dimensions
   let inputImageOriginal = (await getImageFromDisk(inputImageUri)).scale(upScaleInput)
   console.log(`[MOSAIC] Input image dimensions: ${inputImageOriginal.bitmap.width}w x ${inputImageOriginal.bitmap.height}h (upscaled by ${upScaleInput})`)
-  console.log(`[MOSAIC] To be divided into ${desiredPartsInWidth} parts wide, by ${desiredPartsInHeight} parts high`)
+  console.log(`[MOSAIC]  to be divided into ${desiredPartsInWidth} parts wide, by ${desiredPartsInHeight} parts high`)
 
 
   // resize or crop to an easy to use size
   const normalizedInputImageWidth = (Math.ceil(inputImageOriginal.bitmap.width / desiredPartsInWidth) * desiredPartsInWidth)
   const normalizedInputImageHeight = (Math.ceil(inputImageOriginal.bitmap.height / desiredPartsInHeight) * desiredPartsInHeight)
   const inputImageNormalized = inputImageOriginal.cover(normalizedInputImageWidth, normalizedInputImageHeight)
-  console.log(`[MOSAIC] Input image rezised dimensions (to fit tiles): ${inputImageNormalized.bitmap.width}w x ${inputImageNormalized.bitmap.height}h`)
+  console.log(`[MOSAIC]  rezised (to fit tiles): ${inputImageNormalized.bitmap.width}w x ${inputImageNormalized.bitmap.height}h`)
 
 
   // divide `input.jpg` into a 20x20 grid of parts
