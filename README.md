@@ -38,7 +38,7 @@
 - Git
 
 From your home or Projects directory:
-- `git clone https://github.com/carljdp/hyperbolic-mosaic.git` (clone repo)
+- `git clone https://github.com/carljdp/hyperboliq-mosaic.git` (clone repo)
 - `cd hyperboliq-mosaic`
 - `npm install` (install dependencies)
 - `npm start` (start script)
