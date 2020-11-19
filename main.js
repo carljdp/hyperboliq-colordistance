@@ -18,6 +18,28 @@ async function getImageFromDisk(fileName) {
   }
 }
 
+function getAverageRgb(jimp) {
+
+  const pixelCount = jimp.bitmap.width * jimp.bitmap.height
+  let totalR = 0
+  let totalG = 0
+  let totalB = 0
+
+  jimp.scan(0, 0, jimp.bitmap.width, jimp.bitmap.height, function(x, y, idx) {
+    totalR += Math.pow(this.bitmap.data[idx + 0], 2)
+    totalG += Math.pow(this.bitmap.data[idx + 1], 2)
+    totalB += Math.pow(this.bitmap.data[idx + 2], 2)
+  })
+
+  const sRgb = {
+    r: Math.sqrt(totalR/pixelCount),
+    g: Math.sqrt(totalG/pixelCount),
+    b: Math.sqrt(totalB/pixelCount)
+  }
+
+  return sRgb 
+} 
+
 // MAIN
 async function main() {
   console.log('\n[MOSAIC] Strating ..')
@@ -49,11 +71,12 @@ async function main() {
       )
       gridPart[row][column] = {
         jimp: part,
-        averageRgb: null // TODO - calculate it
+        averageRgb: getAverageRgb(part)
       }
     }
   }
-
+  console.log(`[MOSAIC] Tile [0][0] average RGB: ${JSON.stringify(gridPart[0][0].averageRgb)}`)
+  console.log(`[MOSAIC] Tile [0][1] average RGB: ${JSON.stringify(gridPart[0][1].averageRgb)}`)
 
   // get average RGB for each input image part
 
