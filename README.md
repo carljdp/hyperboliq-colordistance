@@ -21,11 +21,11 @@
 
 ## To do | Work in Progress
 
-- [ ] read `input.jpg`, & get its dimmensions
-- [ ] resize `input.jpg` to a easy divisible size
-- [ ] divide `input.jpg` into a 20x20 grid of parts
-- [ ] get average RGB for each part
-- [ ] get average RGB for each tile (in tiles folder)
+- [ ] read `input.jpg`, & get its dimensions
+- [ ] resize/crop `input.jpg` to be an easy to use size
+- [ ] divide `input.jpg` into a 20x20 grid of _parts_
+- [ ] get average RGB for each input image part
+- [ ] get average RGB for each tile image
 - [ ] substitute each part of `input.jpg` with the closest matching tile (from tiles folder)
 - [ ] save as new  `output.jpg`
 
@@ -35,8 +35,20 @@
 
 ## Prerequisites
 - Node.js runtime (latest LTS)
+- Git
+
+From your home or Projects directory:
+- `git clone https://github.com/carljdp/hyperbolic-mosaic.git` (clone repo)
+- `cd hyperboliq-mosaic`
+- `npm install` (install dependencies)
+- `npm start` (start script)
+
 
 ## Test data
-Sample data (taken from caltec101/)
+Sample images taken from caltec-101 dataset (101_ObjectCategories/nautilus)
 - `./testData/input.jpg` - the target-image to be generated
-- `./testData/nautilus/*.jpg` - images to use as tiles for generating the target-image
+- `./testData/tiles/*.jpg` - images to use as tiles for generating the target-image
+
+
+philip wolmerans, tzaneen, cape town, via flippe
+farm steer app
