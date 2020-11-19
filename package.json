@@ -15,10 +15,6 @@
   "author": "Carl J du Preez (carljdp)",
   "license": "MIT",
   "homepage": "https://github.com/carljdp/hyperboliq-mosaic#readme",
-  "devDependencies": {
-    "chai": "^4.2.0",
-    "mocha": "^8.2.1"
-  },
   "dependencies": {
     "jimp": "^0.16.1"
   }
