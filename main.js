@@ -1,18 +1,24 @@
 const path = require('path')
+const fs = require('fs')
 const Jimp = require('jimp')
 
 const inputImageRelativePath = path.join('testData')
 const inputImageFilename = 'input.jpg'
 const inputImageUri = path.join(__dirname, inputImageRelativePath, inputImageFilename) 
 
+const tilesDirRelativePath = path.join('testData/tiles')
+
 const desiredPartsInWidth = 20
 const desiredPartsInHeight = 20
+
+const SUPPORTED_IMAGE_EXTENTIONS = /\.(jpe?g|png|bmp|tiff|gif|)$/ig
 
 async function getImageFromDisk(fileName) {
   try {
     const readResult = await Jimp.read(fileName)
     return readResult
-  } catch (error) {
+  } 
+  catch (error) {
     console.error(error)
     process.exit()
   }
@@ -38,7 +44,19 @@ function getAverageRgb(jimp) {
   }
 
   return sRgb 
-} 
+}
+
+async function getListOfFileNamesInDir(dir) {
+
+  try {
+    const readResult = await fs.promises.readdir(dir)
+    return readResult
+  } 
+  catch (error) {
+    console.error(error)
+    process.exit()
+  }
+}
 
 // MAIN
 async function main() {
@@ -75,11 +93,38 @@ async function main() {
       }
     }
   }
-  console.log(`[MOSAIC] Tile [0][0] average RGB: ${JSON.stringify(gridPart[0][0].averageRgb)}`)
-  console.log(`[MOSAIC] Tile [0][1] average RGB: ${JSON.stringify(gridPart[0][1].averageRgb)}`)
-
+  console.log(`[MOSAIC] Part [0][0] average RGB: ${JSON.stringify(gridPart[0][0].averageRgb)}; width: ${gridPart[0][0].jimp.bitmap.width}, height: ${gridPart[0][0].jimp.bitmap.height}`)
+  console.log(`[MOSAIC] Part [0][1] average RGB: ${JSON.stringify(gridPart[0][1].averageRgb)}; width: ${gridPart[0][1].jimp.bitmap.width}, height: ${gridPart[0][1].jimp.bitmap.height}`)
 
   // get average RGB for each tile image
+  const allFilesInDir = await getListOfFileNamesInDir(path.join(__dirname, tilesDirRelativePath))
+  const supportedFilesInDir = allFilesInDir.filter( fileName => {
+    return (fileName.match(SUPPORTED_IMAGE_EXTENTIONS) !== null)
+  })
+  let poolOfPromises = supportedFilesInDir.map( async imageFileName => {
+    try {
+      const tileImage = await getImageFromDisk(path.join(__dirname, tilesDirRelativePath, imageFileName))
+      const tileImageNormalized = tileImage.cover(partWidth, partHeight)
+      return {
+        fileName: imageFileName,
+        path: path.join(__dirname, tilesDirRelativePath),
+        jimp: tileImageNormalized,
+        averageRgb: getAverageRgb(tileImageNormalized)
+      }
+    } catch (error) {
+      console.error(error)
+      process.exit()
+    }
+  })
+  let poolOfTiles
+  try {
+    poolOfTiles = await Promise.all(poolOfPromises)
+  } catch (error) {
+    console.error(error)
+    process.exit()
+  }
+  console.log(`[MOSAIC] Tile [0] average RGB: ${JSON.stringify(poolOfTiles[0].averageRgb)}; width: ${poolOfTiles[0].jimp.bitmap.width}, height: ${poolOfTiles[0].jimp.bitmap.height}`)
+  console.log(`[MOSAIC] Tile [1] average RGB: ${JSON.stringify(poolOfTiles[1].averageRgb)}; width: ${poolOfTiles[1].jimp.bitmap.width}, height: ${poolOfTiles[1].jimp.bitmap.height}`)
 
 
   // substitute each part of `input.jpg` with the closest matching tile (from tiles folder)
