@@ -25,7 +25,7 @@
 - [x] resize/crop `input.jpg` to be an easy to use size
 - [x] divide `input.jpg` into a 20x20 grid of _parts_
 - [x] get average RGB for each input image part
-- [ ] get average RGB for each tile image
+- [x] get average RGB for each tile image
 - [ ] substitute each part of `input.jpg` with the closest matching tile (from tiles folder)
 - [ ] save as new  `output.jpg`
 
