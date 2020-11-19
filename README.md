@@ -26,8 +26,8 @@
 - [x] divide `input.jpg` into a 20x20 grid of _parts_
 - [x] get average RGB for each input image part
 - [x] get average RGB for each tile image
-- [ ] substitute each part of `input.jpg` with the closest matching tile (from tiles folder)
-- [ ] save as new  `output.jpg`
+- [x] substitute each part of `input.jpg` with the closest matching tile (from tiles folder)
+- [x] save as new  `output.jpg`
 
 ---
 

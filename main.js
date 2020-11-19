@@ -4,12 +4,14 @@ const Jimp = require('jimp')
 
 const inputImageRelativePath = path.join('testData')
 const inputImageFilename = 'input.jpg'
-const inputImageUri = path.join(__dirname, inputImageRelativePath, inputImageFilename) 
+const inputImageUri = path.join(__dirname, inputImageRelativePath, inputImageFilename)
+
 
 const tilesDirRelativePath = path.join('testData/tiles')
 
-const desiredPartsInWidth = 20
-const desiredPartsInHeight = 20
+const desiredPartsInWidth = 24
+const desiredPartsInHeight = 32
+const upScaleInput = 3
 
 const SUPPORTED_IMAGE_EXTENTIONS = /\.(jpe?g|png|bmp|tiff|gif|)$/ig
 
@@ -129,9 +131,9 @@ function convertXyzToCieLab(xyz) {
   let referenceY = 1
   let referenceZ = 1
 
-  let X = X / referenceX
-  let Y = Y / referenceY
-  let Z = Z / referenceZ
+  let X = xyz.x / referenceX
+  let Y = xyz.y / referenceY
+  let Z = xyz.z / referenceZ
 
   if ( X > 0.008856 ) X = Math.pow(X, (1/3))
   else
@@ -145,28 +147,28 @@ function convertXyzToCieLab(xyz) {
   else
     Z = ( 7.787 * Z ) + ( 16 / 116 )
 
-  let CieL = (116 * Y) - 16
-  let CieA = 500 * (X - Y)
-  let CieB = 200 * (Y - Z)
+  let cieL = (116 * Y) - 16
+  let cieA = 500 * (X - Y)
+  let cieB = 200 * (Y - Z)
 
-  const CieLab = {
-    l: CieL,
-    a: CieA,
-    b: CieB
+  const cieLab = {
+    l: cieL,
+    a: cieA,
+    b: cieB
   }
-  return CieLab
+  return cieLab
 }
 
-function convertCieLabToXyz(CieLab) {
+function convertCieLabToXyz(cieLab) {
   // Pseudo code from: http://www.easyrgb.com/en/math.php
 
   let referenceX = 1
   let referenceY = 1
   let referenceZ = 1
 
-  let Y = ( CieLab.l + 16 ) / 116
-  let X = CieLab.a / 500 + Y
-  let Z = Y - CieLab.b / 200
+  let Y = ( cieLab.l + 16 ) / 116
+  let X = cieLab.a / 500 + Y
+  let Z = Y - cieLab.b / 200
 
   if (Math.pow(Y, 3)  > 0.008856 ) 
     Y = Math.pow(Y, 3)
@@ -196,25 +198,41 @@ function convertCieLabToXyz(CieLab) {
   return Xyz
 }
 
+/**
+ * Get color distance (CIE-L*ab color space)
+ * @param {*} cie1 CIE-L*ab color1
+ * @param {*} cie2 CIE-L*ab color2
+ */
+function deltaE(cie1, cie2) {
+  return Math.sqrt(
+    Math.pow((cie1.l - cie2.l), 2) + 
+    Math.pow((cie1.a - cie2.a), 2) + 
+    Math.pow((cie1.b - cie2.b), 2)
+  )
+}
 
 // MAIN
 async function main() {
   console.log('\n[MOSAIC] Strating ..')
 
   // get image & dimensions
-  let inputImageOriginal = await getImageFromDisk(inputImageUri)
-  console.log(`[MOSAIC] Input Image Dimensions (original):   ${inputImageOriginal.bitmap.width}w x ${inputImageOriginal.bitmap.height}h`)
+  let inputImageOriginal = (await getImageFromDisk(inputImageUri)).scale(upScaleInput)
+  console.log(`[MOSAIC] Input image dimensions: ${inputImageOriginal.bitmap.width}w x ${inputImageOriginal.bitmap.height}h (upscaled by ${upScaleInput})`)
+  console.log(`[MOSAIC] To be divided into ${desiredPartsInWidth} parts wide, by ${desiredPartsInHeight} parts high`)
+
 
   // resize or crop to an easy to use size
   const normalizedInputImageWidth = (Math.ceil(inputImageOriginal.bitmap.width / desiredPartsInWidth) * desiredPartsInWidth)
   const normalizedInputImageHeight = (Math.ceil(inputImageOriginal.bitmap.height / desiredPartsInHeight) * desiredPartsInHeight)
   const inputImageNormalized = inputImageOriginal.cover(normalizedInputImageWidth, normalizedInputImageHeight)
-  console.log(`[MOSAIC] Input Image Dimensions (normalized): ${inputImageNormalized.bitmap.width}w x ${inputImageNormalized.bitmap.height}h`)
+  console.log(`[MOSAIC] Input image rezised dimensions (to fit tiles): ${inputImageNormalized.bitmap.width}w x ${inputImageNormalized.bitmap.height}h`)
 
   // divide `input.jpg` into a 20x20 grid of parts
   const partWidth = inputImageNormalized.bitmap.width / desiredPartsInWidth
   const partHeight = inputImageNormalized.bitmap.height / desiredPartsInHeight
-  console.log(`[MOSAIC] Tile Image Dimensions (normalized):   ${partWidth}w x  ${partHeight}h`)
+  console.log(`[MOSAIC] Part dimensions: ${partWidth}w x  ${partHeight}h`)
+  console.log(`[MOSAIC] Analyzing input image..`)
+  process.stdout.write('[MOSAIC]  ')
   let gridPart = []
   for (let row = 0; row < desiredPartsInHeight; row++) {
     if (!gridPart[row]) gridPart[row] = []
@@ -226,16 +244,24 @@ async function main() {
         partWidth,
         partHeight
       )
+      const averageRgb = getAverageRgb(part)
+      const cieLab = convertXyzToCieLab(convertRgbToXyz(averageRgb))
       gridPart[row][column] = {
         jimp: part,
-        averageRgb: getAverageRgb(part)
+        averageRgb,
+        cieLab
       }
     }
+    process.stdout.write('.')
   }
-  console.log(`[MOSAIC] Part [0][0] average RGB: ${JSON.stringify(gridPart[0][0].averageRgb)}; width: ${gridPart[0][0].jimp.bitmap.width}, height: ${gridPart[0][0].jimp.bitmap.height}`)
-  console.log(`[MOSAIC] Part [0][1] average RGB: ${JSON.stringify(gridPart[0][1].averageRgb)}; width: ${gridPart[0][1].jimp.bitmap.width}, height: ${gridPart[0][1].jimp.bitmap.height}`)
+  process.stdout.write('\n')
+
+  //console.log(`[MOSAIC] Part [0][0] average RGB: ${JSON.stringify(gridPart[0][0].averageRgb)}; width: ${gridPart[0][0].jimp.bitmap.width}, height: ${gridPart[0][0].jimp.bitmap.height}`)
+  //console.log(`[MOSAIC] Part [0][1] average RGB: ${JSON.stringify(gridPart[0][1].averageRgb)}; width: ${gridPart[0][1].jimp.bitmap.width}, height: ${gridPart[0][1].jimp.bitmap.height}`)
 
   // get average RGB for each tile image
+  console.log(`[MOSAIC] Analyzing tile images..`)
+  process.stdout.write('[MOSAIC]  ')
   const allFilesInDir = await getListOfFileNamesInDir(path.join(__dirname, tilesDirRelativePath))
   const supportedFilesInDir = allFilesInDir.filter( fileName => {
     return (fileName.match(SUPPORTED_IMAGE_EXTENTIONS) !== null)
@@ -244,11 +270,15 @@ async function main() {
     try {
       const tileImage = await getImageFromDisk(path.join(__dirname, tilesDirRelativePath, imageFileName))
       const tileImageNormalized = tileImage.cover(partWidth, partHeight)
+      const averageRgb = getAverageRgb(tileImageNormalized)
+      const cieLab = convertXyzToCieLab(convertRgbToXyz(averageRgb))
+      process.stdout.write('.')
       return {
         fileName: imageFileName,
         path: path.join(__dirname, tilesDirRelativePath),
         jimp: tileImageNormalized,
-        averageRgb: getAverageRgb(tileImageNormalized)
+        averageRgb,
+        cieLab
       }
     } catch (error) {
       console.error(error)
@@ -258,21 +288,47 @@ async function main() {
   let poolOfTiles
   try {
     poolOfTiles = await Promise.all(poolOfPromises)
+    process.stdout.write('\n')
   } catch (error) {
     console.error(error)
     process.exit()
   }
-  console.log(`[MOSAIC] Tile [0] average RGB: ${JSON.stringify(poolOfTiles[0].averageRgb)}; width: ${poolOfTiles[0].jimp.bitmap.width}, height: ${poolOfTiles[0].jimp.bitmap.height}`)
-  console.log(`[MOSAIC] Tile [1] average RGB: ${JSON.stringify(poolOfTiles[1].averageRgb)}; width: ${poolOfTiles[1].jimp.bitmap.width}, height: ${poolOfTiles[1].jimp.bitmap.height}`)
+  //console.log(`[MOSAIC] Tile [0] average RGB: ${JSON.stringify(poolOfTiles[0].averageRgb)}; width: ${poolOfTiles[0].jimp.bitmap.width}, height: ${poolOfTiles[0].jimp.bitmap.height}`)
+  //console.log(`[MOSAIC] Tile [1] average RGB: ${JSON.stringify(poolOfTiles[1].averageRgb)}; width: ${poolOfTiles[1].jimp.bitmap.width}, height: ${poolOfTiles[1].jimp.bitmap.height}`)
 
-
+  console.log(`[MOSAIC] Composing new output image..`)
   // substitute each part of `input.jpg` with the closest matching tile (from tiles folder)
+  let canvas = new Jimp(inputImageNormalized.bitmap.width, inputImageNormalized.bitmap.height)
+
+  process.stdout.write('[MOSAIC]  ')
+  for (let row = 0; row < desiredPartsInHeight; row++) {
+    for (let column = 0; column < desiredPartsInWidth; column++) {
+
+      const targetCieLab = gridPart[row][column].cieLab
+      
+      const bestMatch = poolOfTiles
+        .map( (tile, idx) => {
+          return {
+            distance: deltaE(gridPart[row][column].cieLab, tile.cieLab),
+            //jimp: tile.jimp,
+            tileId: idx
+          }
+        }).sort( (a, b) => a.distance - b.distance)[0]
+
+      //console.log(`For part [${row}][${column}] bestMatch is tile [${bestMatch.tileId}]`)
+      canvas = canvas.composite(poolOfTiles[bestMatch.tileId].jimp, column * partWidth, row * partHeight)
+    }
+    process.stdout.write('.')
+  }
+  process.stdout.write('\n')
+  console.log(`[MOSAIC] Output Image Dimensions (normalized): ${canvas.bitmap.width}w x ${canvas.bitmap.height}h`)
 
 
   // save as new  `output.jpg`
+  canvas.write(path.join(__dirname, 'output.jpg'))
 
 
-  console.log('[MOSAIC] End.\n')
+  console.log('[MOSAIC] Done.\n')
 }
 
 // RUN
